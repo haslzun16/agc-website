@@ -3,15 +3,214 @@
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Phone, Mail, MapPin, ArrowRight, Star, CheckCircle, Clock, PenToolIcon as Tool } from "lucide-react"
+import Head from "next/head"
+import { Phone, Mail, MapPin, ArrowRight, Star, CheckCircle, Clock, PenToolIcon as Tool, AlertCircle, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
+import { useContactForm } from "@/hooks/use-contact-form"
+
+// Structured Data for Local Business SEO
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "AGC Home Renovation & Handymen service LLC",
+  "image": "https://agchomerenovation.com/logo.png",
+  "@id": "https://agchomerenovation.com",
+  "url": "https://agchomerenovation.com",
+  "telephone": "+13363292502",
+  "email": "carlosr0415@yahoo.com",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "209 Smith St",
+    "addressLocality": "Burlington",
+    "addressRegion": "NC",
+    "postalCode": "27217",
+    "addressCountry": "US"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 36.0956,
+    "longitude": -79.4378
+  },
+  "description": "Expert home renovation & handyman services in Burlington NC. Kitchen remodeling, bathroom renovation, flooring, fencing & shed construction.",
+  "priceRange": "$$",
+  "servesCuisine": [],
+  "hasMap": "https://maps.google.com/?q=209+Smith+St,+Burlington,+NC+27217",
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      "opens": "08:00",
+      "closes": "18:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": "Saturday",
+      "opens": "09:00",
+      "closes": "16:00"
+    }
+  ],
+  "areaServed": [
+    {
+      "@type": "City",
+      "name": "Burlington, NC"
+    },
+    {
+      "@type": "City", 
+      "name": "Greensboro, NC"
+    },
+    {
+      "@type": "City",
+      "name": "Durham, NC"
+    },
+    {
+      "@type": "City",
+      "name": "Chapel Hill, NC"
+    }
+  ],
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Home Renovation Services",
+    "itemListElement": [
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Kitchen Remodeling",
+          "description": "Transform your kitchen with custom cabinets, countertops, and modern appliances."
+        }
+      },
+      {
+        "@type": "Offer", 
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Bathroom Remodeling",
+          "description": "Update your bathroom with new fixtures, tile work, and modern designs."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service", 
+          "name": "Flooring Installation",
+          "description": "Expert installation of hardwood, laminate, tile, and vinyl flooring."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Handyman Services", 
+          "description": "From minor repairs to home maintenance, we've got all your handyman needs covered."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Fence Installation",
+          "description": "Custom fence design and installation to enhance your property's security and appeal."
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": "Shed Construction",
+          "description": "Custom-built sheds designed to match your home and meet your storage needs."
+        }
+      }
+    ]
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "5",
+    "reviewCount": "50"
+  },
+  "sameAs": [
+    "https://www.facebook.com/profile.php?id=61574488941619"
+  ]
+}
+
+// Breadcrumb Schema
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://agchomerenovation.com"
+    }
+  ]
+}
+
+// FAQ Schema for better SERP features
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What services does AGC Home Renovation offer?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "AGC Home Renovation offers kitchen remodeling, bathroom renovation, flooring installation, handyman services, fence installation, and shed construction in Burlington NC and surrounding areas."
+      }
+    },
+    {
+      "@type": "Question", 
+      "name": "Do you provide free estimates?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, we provide free estimates for all our home renovation and handyman services. Contact us at (336) 329-2502 to schedule your consultation."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What areas do you serve?",
+      "acceptedAnswer": {
+        "@type": "Answer", 
+        "text": "We serve Burlington NC and surrounding areas including Greensboro, Durham, Chapel Hill, and the greater North Carolina Triangle region."
+      }
+    }
+  ]
+}
 
 export default function Home() {
   // State for the hero section
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isQuoteFormOpen, setIsQuoteFormOpen] = useState(false)
   const heroRef = useRef(null)
+
+  // Form state
+  const { isSubmitting, isSuccess, error, submitForm, reset } = useContactForm()
+  
+  // Form data states
+  const [quoteFormData, setQuoteFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    service: '',
+    message: ''
+  })
+  
+  const [estimateFormData, setEstimateFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    service: '',
+    message: ''
+  })
+  
+  const [contactFormData, setContactFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  })
 
   // Parallax effect
   const { scrollYProgress } = useScroll({
@@ -52,8 +251,66 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [showcaseProjects.length])
 
+  // Form submission handlers
+  const handleQuoteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await submitForm({
+      ...quoteFormData,
+      formType: 'quote'
+    })
+    if (isSuccess) {
+      setQuoteFormData({ name: '', email: '', phone: '', service: '', message: '' })
+      setTimeout(() => {
+        setIsQuoteFormOpen(false)
+        reset()
+      }, 2000)
+    }
+  }
+
+  const handleEstimateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await submitForm({
+      ...estimateFormData,
+      formType: 'estimate'
+    })
+    if (isSuccess) {
+      setEstimateFormData({ name: '', email: '', phone: '', service: '', message: '' })
+    }
+  }
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await submitForm({
+      ...contactFormData,
+      formType: 'contact'
+    })
+    if (isSuccess) {
+      setContactFormData({ name: '', email: '', phone: '', subject: '', message: '' })
+    }
+  }
+
+  // Reset form when opening quote modal
+  const handleOpenQuoteForm = () => {
+    setIsQuoteFormOpen(true)
+    reset()
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      
       {/* Header/Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/95 backdrop-blur-sm border-b border-gray-200/80">
         <div className="container flex h-20 items-center justify-between">
@@ -81,7 +338,7 @@ export default function Home() {
               </div>
               <span>(336) 329-2502</span>
             </a>
-            <Button className="bg-primary hover:bg-primary/90 px-6" onClick={() => setIsQuoteFormOpen(true)}>
+            <Button className="bg-primary hover:bg-primary/90 px-6" onClick={handleOpenQuoteForm}>
               Get a Quote
             </Button>
           </div>
@@ -90,7 +347,7 @@ export default function Home() {
 
       <main className="flex-1 pt-20">
         {/* Professional & Creative Hero Section */}
-        <section ref={heroRef} className="relative bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+        <section ref={heroRef} className="relative bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden" aria-labelledby="hero-heading">
           {/* Decorative elements */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
             <motion.div
@@ -116,9 +373,10 @@ export default function Home() {
                     <span>Professional Craftsmanship</span>
                   </div>
 
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
+                  <h1 id="hero-heading" className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1]">
                     <span className="block">Elevate Your</span>
                     <span className="block mt-2 text-primary">Living Space</span>
+                    <span className="sr-only">- AGC Home Renovation Burlington NC</span>
                   </h1>
 
                   <p className="mt-6 text-lg md:text-xl text-gray-600 max-w-lg">
@@ -136,7 +394,7 @@ export default function Home() {
                   <Button
                     size="lg"
                     className="bg-primary hover:bg-primary/90 text-white px-8 rounded-full h-14"
-                    onClick={() => setIsQuoteFormOpen(true)}
+                    onClick={handleOpenQuoteForm}
                   >
                     Request Free Consultation
                   </Button>
@@ -144,6 +402,7 @@ export default function Home() {
                     size="lg"
                     variant="outline"
                     className="border-gray-300 hover:bg-gray-100 text-gray-800 px-8 rounded-full h-14"
+                    onClick={() => document.getElementById('gallery')?.scrollIntoView({ behavior: 'smooth' })}
                   >
                     Explore Our Work
                   </Button>
@@ -192,10 +451,11 @@ export default function Home() {
                       >
                         <Image
                           src={showcaseProjects[currentSlide].image || "/placeholder.svg"}
-                          alt={showcaseProjects[currentSlide].title}
+                          alt={`${showcaseProjects[currentSlide].title} - AGC Home Renovation Burlington NC`}
                           fill
                           className="object-cover"
                           priority
+                          sizes="(max-width: 768px) 100vw, 50vw"
                         />
 
                         {/* Gradient overlay */}
@@ -364,81 +624,116 @@ export default function Home() {
                   </button>
                 </div>
 
-                <form className="space-y-5">
-                  <div className="grid grid-cols-2 gap-5">
+                {isSuccess ? (
+                  <div className="text-center py-8">
+                    <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h3>
+                    <p className="text-gray-600 mb-4">
+                      Your request has been submitted successfully. We'll get back to you as soon as possible.
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      You should receive a confirmation email shortly.
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleQuoteSubmit} className="space-y-5">
+                    {error && (
+                      <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+                        <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                        <span className="text-sm">{error}</span>
+                      </div>
+                    )}
+                    
+                    <div className="grid grid-cols-2 gap-5">
+                      <div>
+                        <label htmlFor="quote-name" className="block text-sm font-medium text-gray-700 mb-1">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          id="quote-name"
+                          required
+                          value={quoteFormData.name}
+                          onChange={(e) => setQuoteFormData(prev => ({ ...prev, name: e.target.value }))}
+                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                          placeholder="John Smith"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="quote-phone" className="block text-sm font-medium text-gray-700 mb-1">
+                          Phone Number *
+                        </label>
+                        <input
+                          type="tel"
+                          id="quote-phone"
+                          required
+                          value={quoteFormData.phone}
+                          onChange={(e) => setQuoteFormData(prev => ({ ...prev, phone: e.target.value }))}
+                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                          placeholder="(123) 456-7890"
+                        />
+                      </div>
+                    </div>
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                        Full Name
+                      <label htmlFor="quote-email" className="block text-sm font-medium text-gray-700 mb-1">
+                        Email Address *
                       </label>
                       <input
-                        type="text"
-                        id="name"
+                        type="email"
+                        id="quote-email"
+                        required
+                        value={quoteFormData.email}
+                        onChange={(e) => setQuoteFormData(prev => ({ ...prev, email: e.target.value }))}
                         className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                        placeholder="John Smith"
+                        placeholder="john@example.com"
                       />
                     </div>
                     <div>
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone Number
+                      <label htmlFor="quote-service" className="block text-sm font-medium text-gray-700 mb-1">
+                        Service Interested In
                       </label>
-                      <input
-                        type="tel"
-                        id="phone"
+                      <select
+                        id="quote-service"
+                        value={quoteFormData.service}
+                        onChange={(e) => setQuoteFormData(prev => ({ ...prev, service: e.target.value }))}
                         className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                        placeholder="(123) 456-7890"
+                      >
+                        <option value="">Select a Service</option>
+                        <option value="Kitchen Remodeling">Kitchen Remodeling</option>
+                        <option value="Bathroom Remodeling">Bathroom Remodeling</option>
+                        <option value="Flooring Installation">Flooring Installation</option>
+                        <option value="Handyman Services">Handyman Services</option>
+                        <option value="Fence Installation">Fence Installation</option>
+                        <option value="Shed Construction">Shed Construction</option>
+                        <option value="Other Services">Other Services</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="quote-message" className="block text-sm font-medium text-gray-700 mb-1">
+                        Project Details *
+                      </label>
+                      <textarea
+                        id="quote-message"
+                        rows={4}
+                        required
+                        value={quoteFormData.message}
+                        onChange={(e) => setQuoteFormData(prev => ({ ...prev, message: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                        placeholder="Tell us about your project and any specific requirements..."
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
-                      placeholder="john@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="service" className="block text-sm font-medium text-gray-700 mb-1">
-                      Service Interested In
-                    </label>
-                    <select
-                      id="service"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg text-base font-medium h-auto disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <option value="">Select a Service</option>
-                      <option value="kitchen">Kitchen Remodeling</option>
-                      <option value="bathroom">Bathroom Remodeling</option>
-                      <option value="flooring">Flooring Installation</option>
-                      <option value="handyman">Handyman Services</option>
-                      <option value="fence">Fence Installation</option>
-                      <option value="shed">Shed Construction</option>
-                      <option value="other">Other Services</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                      Project Details
-                    </label>
-                    <textarea
-                      id="message"
-                      rows={4}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
-                      placeholder="Tell us about your project and any specific requirements..."
-                    ></textarea>
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg text-base font-medium h-auto"
-                  >
-                    Submit Request
-                  </Button>
-                  <p className="text-xs text-gray-500 text-center">
-                    We respect your privacy. Your information will not be shared with third parties.
-                  </p>
-                </form>
+                      {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                    </Button>
+                    <p className="text-xs text-gray-500 text-center">
+                      We respect your privacy. Your information will not be shared with third parties.
+                    </p>
+                  </form>
+                )}
               </motion.div>
             </motion.div>
           )}
@@ -458,7 +753,13 @@ export default function Home() {
               {/* Service Card 1 */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="h-48 relative">
-                  <Image src="/kitchen-remodel.jpg" alt="Kitchen Remodeling" fill className="object-cover" />
+                  <Image 
+                    src="/kitchen-remodel.jpg" 
+                    alt="Kitchen Remodeling Services Burlington NC - Custom Cabinets and Countertops by AGC Home Renovation" 
+                    fill 
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-bold mb-2">Kitchen Remodeling</h3>
@@ -750,78 +1051,118 @@ export default function Home() {
                   Free Estimate
                 </div>
                 <h3 className="text-2xl font-bold mb-6 text-primary">Get a Free Estimate</h3>
-                <form className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-medium mb-1 text-gray-700">
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Your Name"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="phone" className="block text-sm font-medium mb-1 text-gray-700">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        id="phone"
-                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary"
-                        placeholder="Your Phone"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium mb-1 text-gray-700">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary"
-                      placeholder="Your Email"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="service" className="block text-sm font-medium mb-1 text-gray-700">
-                      Service Needed
-                    </label>
-                    <select
-                      id="service"
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary"
+                
+                {isSuccess ? (
+                  <div className="text-center py-8">
+                    <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                    <h4 className="text-xl font-bold text-gray-900 mb-2">Request Submitted!</h4>
+                    <p className="text-gray-600 mb-4">
+                      We'll contact you as soon as possible to schedule your free estimate.
+                    </p>
+                    <Button
+                      onClick={reset}
+                      variant="outline"
+                      className="border-primary text-primary hover:bg-primary/5"
                     >
-                      <option value="">Select a Service</option>
-                      <option value="kitchen">Kitchen Remodeling</option>
-                      <option value="bathroom">Bathroom Remodeling</option>
-                      <option value="flooring">Flooring Installation</option>
-                      <option value="handyman">Handyman Services</option>
-                      <option value="fence">Fence Installation</option>
-                      <option value="shed">Shed Construction</option>
-                      <option value="other">Other</option>
-                    </select>
+                      Submit Another Request
+                    </Button>
                   </div>
-                  <div>
-                    <label htmlFor="message" className="block text-sm font-medium mb-1 text-gray-700">
-                      Project Details
-                    </label>
-                    <textarea
-                      id="message"
-                      rows={4}
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary"
-                      placeholder="Tell us about your project"
-                    ></textarea>
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full bg-primary text-white hover:bg-primary/90 font-bold text-lg py-6 shadow-lg"
-                  >
-                    Submit Request
-                  </Button>
-                </form>
+                ) : (
+                  <form onSubmit={handleEstimateSubmit} className="space-y-4">
+                    {error && (
+                      <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 mb-4">
+                        <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                        <span className="text-sm">{error}</span>
+                      </div>
+                    )}
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="estimate-name" className="block text-sm font-medium mb-1 text-gray-700">
+                          Name *
+                        </label>
+                        <input
+                          type="text"
+                          id="estimate-name"
+                          required
+                          value={estimateFormData.name}
+                          onChange={(e) => setEstimateFormData(prev => ({ ...prev, name: e.target.value }))}
+                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary"
+                          placeholder="Your Name"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="estimate-phone" className="block text-sm font-medium mb-1 text-gray-700">
+                          Phone *
+                        </label>
+                        <input
+                          type="tel"
+                          id="estimate-phone"
+                          required
+                          value={estimateFormData.phone}
+                          onChange={(e) => setEstimateFormData(prev => ({ ...prev, phone: e.target.value }))}
+                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary"
+                          placeholder="Your Phone"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label htmlFor="estimate-email" className="block text-sm font-medium mb-1 text-gray-700">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        id="estimate-email"
+                        required
+                        value={estimateFormData.email}
+                        onChange={(e) => setEstimateFormData(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary"
+                        placeholder="Your Email"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="estimate-service" className="block text-sm font-medium mb-1 text-gray-700">
+                        Service Needed
+                      </label>
+                      <select
+                        id="estimate-service"
+                        value={estimateFormData.service}
+                        onChange={(e) => setEstimateFormData(prev => ({ ...prev, service: e.target.value }))}
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary"
+                      >
+                        <option value="">Select a Service</option>
+                        <option value="Kitchen Remodeling">Kitchen Remodeling</option>
+                        <option value="Bathroom Remodeling">Bathroom Remodeling</option>
+                        <option value="Flooring Installation">Flooring Installation</option>
+                        <option value="Handyman Services">Handyman Services</option>
+                        <option value="Fence Installation">Fence Installation</option>
+                        <option value="Shed Construction">Shed Construction</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor="estimate-message" className="block text-sm font-medium mb-1 text-gray-700">
+                        Project Details *
+                      </label>
+                      <textarea
+                        id="estimate-message"
+                        rows={4}
+                        required
+                        value={estimateFormData.message}
+                        onChange={(e) => setEstimateFormData(prev => ({ ...prev, message: e.target.value }))}
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary"
+                        placeholder="Tell us about your project"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-primary text-white hover:bg-primary/90 font-bold text-lg py-6 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                    </Button>
+                  </form>
+                )}
               </div>
             </div>
           </div>
@@ -848,7 +1189,12 @@ export default function Home() {
                   expertise to bring your vision to life.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button className="bg-primary hover:bg-primary/90">Contact Us</Button>
+                  <Button 
+                    className="bg-primary hover:bg-primary/90"
+                    onClick={() => window.location.href = 'tel:3363292502'}
+                  >
+                    Contact Us
+                  </Button>
                   {/*<Button variant="outline">Learn More</Button>*/}
                 </div>
               </div>
@@ -1010,68 +1356,111 @@ export default function Home() {
 
               <div className="bg-muted/30 p-8 rounded-lg">
                 <h3 className="text-xl font-bold mb-6">Send Us a Message</h3>
-                <form className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                {isSuccess ? (
+                  <div className="text-center py-8">
+                    <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                    <h4 className="text-xl font-bold text-gray-900 mb-2">Message Sent!</h4>
+                    <p className="text-gray-600 mb-4">
+                      Thank you for contacting us. We'll respond to your message as soon as possible.
+                    </p>
+                    <Button
+                      onClick={reset}
+                      variant="outline"
+                      className="border-primary text-primary hover:bg-primary/5"
+                    >
+                      Send Another Message
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleContactSubmit} className="space-y-4">
+                    {error && (
+                      <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 mb-4">
+                        <AlertCircle className="h-5 w-5 flex-shrink-0" />
+                        <span className="text-sm">{error}</span>
+                      </div>
+                    )}
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="contact-name" className="block text-sm font-medium mb-1">
+                          Name *
+                        </label>
+                        <input
+                          type="text"
+                          id="contact-name"
+                          required
+                          value={contactFormData.name}
+                          onChange={(e) => setContactFormData(prev => ({ ...prev, name: e.target.value }))}
+                          className="w-full px-3 py-2 border border-muted rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                          placeholder="Your Name"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="contact-phone" className="block text-sm font-medium mb-1">
+                          Phone *
+                        </label>
+                        <input
+                          type="tel"
+                          id="contact-phone"
+                          required
+                          value={contactFormData.phone}
+                          onChange={(e) => setContactFormData(prev => ({ ...prev, phone: e.target.value }))}
+                          className="w-full px-3 py-2 border border-muted rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                          placeholder="Your Phone"
+                        />
+                      </div>
+                    </div>
                     <div>
-                      <label htmlFor="contact-name" className="block text-sm font-medium mb-1">
-                        Name
+                      <label htmlFor="contact-email" className="block text-sm font-medium mb-1">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        id="contact-email"
+                        required
+                        value={contactFormData.email}
+                        onChange={(e) => setContactFormData(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full px-3 py-2 border border-muted rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                        placeholder="Your Email"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="contact-subject" className="block text-sm font-medium mb-1">
+                        Subject
                       </label>
                       <input
                         type="text"
-                        id="contact-name"
-                        className="w-full px-3 py-2 border border-muted rounded-md"
-                        placeholder="Your Name"
+                        id="contact-subject"
+                        value={contactFormData.subject}
+                        onChange={(e) => setContactFormData(prev => ({ ...prev, subject: e.target.value }))}
+                        className="w-full px-3 py-2 border border-muted rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                        placeholder="Subject"
                       />
                     </div>
                     <div>
-                      <label htmlFor="contact-phone" className="block text-sm font-medium mb-1">
-                        Phone
+                      <label htmlFor="contact-message" className="block text-sm font-medium mb-1">
+                        Message *
                       </label>
-                      <input
-                        type="tel"
-                        id="contact-phone"
-                        className="w-full px-3 py-2 border border-muted rounded-md"
-                        placeholder="Your Phone"
+                      <textarea
+                        id="contact-message"
+                        rows={5}
+                        required
+                        value={contactFormData.message}
+                        onChange={(e) => setContactFormData(prev => ({ ...prev, message: e.target.value }))}
+                        className="w-full px-3 py-2 border border-muted rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
+                        placeholder="Your Message"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label htmlFor="contact-email" className="block text-sm font-medium mb-1">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="contact-email"
-                      className="w-full px-3 py-2 border border-muted rounded-md"
-                      placeholder="Your Email"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="contact-subject" className="block text-sm font-medium mb-1">
-                      Subject
-                    </label>
-                    <input
-                      type="text"
-                      id="contact-subject"
-                      className="w-full px-3 py-2 border border-muted rounded-md"
-                      placeholder="Subject"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="contact-message" className="block text-sm font-medium mb-1">
-                      Message
-                    </label>
-                    <textarea
-                      id="contact-message"
-                      rows={5}
-                      className="w-full px-3 py-2 border border-muted rounded-md"
-                      placeholder="Your Message"
-                    ></textarea>
-                  </div>
-                  <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
-                    Send Message
-                  </Button>
-                </form>
+                    <Button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className="w-full bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? 'Sending...' : 'Send Message'}
+                    </Button>
+                  </form>
+                )}
               </div>
             </div>
           </div>
@@ -1095,7 +1484,7 @@ export default function Home() {
                 Quality home renovations and handyman services in Burlington and surrounding areas.
               </p>
               <div className="flex gap-4">
-                <a href="#" className="text-white hover:text-primary transition-colors">
+                <a href="https://www.facebook.com/profile.php?id=61574488941619" className="text-white hover:text-primary transition-colors">
                   <span className="sr-only">Facebook</span>
                   <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path
@@ -1105,7 +1494,7 @@ export default function Home() {
                     />
                   </svg>
                 </a>
-                <a href="#" className="text-white hover:text-primary transition-colors">
+                {/* <a href="#" className="text-white hover:text-primary transition-colors">
                   <span className="sr-only">Instagram</span>
                   <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path
@@ -1114,7 +1503,7 @@ export default function Home() {
                       clipRule="evenodd"
                     />
                   </svg>
-                </a>
+                </a> */}
               </div>
             </div>
 
@@ -1122,32 +1511,32 @@ export default function Home() {
               <h3 className="font-bold text-lg mb-4">Services</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Link href="#services" className="text-gray-400 hover:text-white transition-colors">
                     Kitchen Remodeling
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Link href="#services" className="text-gray-400 hover:text-white transition-colors">
                     Bathroom Remodeling
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Link href="#services" className="text-gray-400 hover:text-white transition-colors">
                     Flooring Installation
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Link href="#services" className="text-gray-400 hover:text-white transition-colors">
                     Handyman Services
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Link href="#services" className="text-gray-400 hover:text-white transition-colors">
                     Fence Installation
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <Link href="#services" className="text-gray-400 hover:text-white transition-colors">
                     Shed Construction
                   </Link>
                 </li>

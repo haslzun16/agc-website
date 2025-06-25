@@ -1,0 +1,27 @@
+{
+  "name": "AGC Home Renovation - Burlington NC",
+  "short_name": "AGC Renovation",
+  "description": "Expert home renovation & handyman services in Burlington NC. Kitchen remodeling, bathroom renovation, flooring, fencing & shed construction.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-US",
+  "categories": ["business", "home", "renovation"],
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+} 
