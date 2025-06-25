@@ -147,8 +147,8 @@ const createInternalEmailContent =  `
 
     // Send email to business
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'contact@yourdomain.com',
-      to: [process.env.BUSINESS_EMAIL || 'haslzun08@gmail.com', 'haslzun08@gmail.com'],
+      from: process.env.RESEND_FROM_EMAIL || 'info@agcrenovationexperts.com',
+      to: [process.env.BUSINESS_EMAIL || 'carlosr0415@yahoo.com', 'haslzun08@gmail.com'],
       subject: emailSubject,
       html: createInternalEmailContent,
       replyTo: email,
@@ -282,7 +282,7 @@ const createInternalEmailContent =  `
 `;
 
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'contact@yourdomain.com',
+      from: process.env.RESEND_FROM_EMAIL || 'info@agcrenovationexperts.com',
       to: [email],
       subject: 'Thank you for contacting AGC Home Renovation',
       html: confirmationEmail,
