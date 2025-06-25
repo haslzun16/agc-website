@@ -16,10 +16,7 @@ const nextConfig = {
   compress: true,
   // Enable poweredByHeader removal for security
   poweredByHeader: false,
-  // Experimental features for better performance
-  experimental: {
-    optimizeCss: true,
-  },
+
   // Security headers
   async headers() {
     return [
