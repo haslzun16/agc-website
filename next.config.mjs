@@ -18,7 +18,7 @@ const nextConfig = {
   poweredByHeader: false,
   // Experimental features for better performance
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // Disabled due to missing critters dependency
   },
   // Security headers
   async headers() {
