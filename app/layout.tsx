@@ -27,6 +27,12 @@ export const metadata: Metadata = {
     siteName: 'AGC Home Renovation',
     images: [
       {
+        url: '/logo-small.png',
+        width: 1200,
+        height: 630,
+        alt: 'AGC Home Renovation Logo - Burlington NC Home Renovation Services',
+      },
+      {
         url: '/kitchen-showcase.jpg',
         width: 1200,
         height: 630,
@@ -55,6 +61,17 @@ export const metadata: Metadata = {
   },
   verification: {
     google: 'your-google-verification-code', // Add your actual verification code
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/logo-small.png', type: 'image/png', sizes: '32x32' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180' },
+      { url: '/logo-small.png', sizes: '180x180' },
+    ],
+    shortcut: '/favicon.ico',
   },
 }
 

@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import Head from "next/head"
 import { Phone, Mail, MapPin, ArrowRight, Star, CheckCircle, Clock, PenToolIcon as Tool, AlertCircle, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
@@ -14,7 +13,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   "name": "AGC Home Renovation & Handymen service LLC",
-  "image": "https://agchomerenovation.com/logo.png",
+  "image": "https://agchomerenovation.com/logo-1200x720.png",
   "@id": "https://agchomerenovation.com",
   "url": "https://agchomerenovation.com",
   "telephone": "+13363292502",
